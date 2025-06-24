@@ -6,7 +6,7 @@ description: Transforms TNT explosions into beautiful low-flying fireworks witho
 commands:
   tntfireworks:
     description: Main command for TNTFireworks plugin
-    usage: /tntfireworks [reload|update|check|restart]
+    usage: /tntfireworks [reload|update|check]
     aliases: [tntfw]
 permissions:
   tntfireworks.reload:
@@ -14,7 +14,4 @@ permissions:
     default: op
   tntfireworks.update:
     description: Allows checking for and applying plugin updates
-    default: op
-  tntfireworks.restart:
-    description: Allows restarting the server after an update
     default: op

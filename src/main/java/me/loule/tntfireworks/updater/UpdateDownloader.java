@@ -29,11 +29,11 @@ public class UpdateDownloader {
     }
 
     /**
-     * Downloads and installs the latest version of the plugin
+     * Downloads the update and restarts the server
      * @param sender The sender of the command for notifications
      * @param version The version to download
      */
-    public void downloadUpdate(CommandSender sender, String version) {
+    public void downloadAndRestart(CommandSender sender, String version) {
         sender.sendMessage("§6[TNTFireworks] §eStarting download of version " + version + "...");
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
@@ -145,8 +145,8 @@ public class UpdateDownloader {
                 // Notify the user
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     sender.sendMessage("§6[TNTFireworks] §aUpdate downloaded successfully!");
-                    sender.sendMessage("§6[TNTFireworks] §eThe update will be installed on the next server restart.");
-                    sender.sendMessage("§6[TNTFireworks] §eUse §b/tntfireworks restart §eto restart the server now.");
+                    sender.sendMessage("§6[TNTFireworks] §eThe server will now restart to apply the update.");
+                    restartServer(sender);
                 });
 
             } catch (Exception e) {

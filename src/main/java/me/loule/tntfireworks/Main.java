@@ -157,7 +157,8 @@ public class Main extends JavaPlugin implements Listener {
                     }
                 } else if (args[0].equalsIgnoreCase("update")) {
                     if (sender.hasPermission("tntfireworks.update")) {
-                        updateManager.updatePlugin(sender);
+                        boolean confirmed = args.length == 2 && args[1].equalsIgnoreCase("confirm");
+                        updateManager.updatePlugin(sender, confirmed);
                         return true;
                     } else {
                         sender.sendMessage("§c[TNTFireworks] You don't have permission to use this command.");
@@ -166,14 +167,6 @@ public class Main extends JavaPlugin implements Listener {
                 } else if (args[0].equalsIgnoreCase("check")) {
                     if (sender.hasPermission("tntfireworks.update")) {
                         updateManager.checkForUpdates(sender);
-                        return true;
-                    } else {
-                        sender.sendMessage("§c[TNTFireworks] You don't have permission to use this command.");
-                        return true;
-                    }
-                } else if (args[0].equalsIgnoreCase("restart")) {
-                    if (sender.hasPermission("tntfireworks.restart")) {
-                        updateManager.restartServer(sender);
                         return true;
                     } else {
                         sender.sendMessage("§c[TNTFireworks] You don't have permission to use this command.");
@@ -192,9 +185,6 @@ public class Main extends JavaPlugin implements Listener {
             if (sender.hasPermission("tntfireworks.update")) {
                 sender.sendMessage("§6[TNTFireworks] §f/tntfireworks check §7- §fCheck for updates");
                 sender.sendMessage("§6[TNTFireworks] §f/tntfireworks update §7- §fDownload the latest version");
-            }
-            if (sender.hasPermission("tntfireworks.restart")) {
-                sender.sendMessage("§6[TNTFireworks] §f/tntfireworks restart §7- §fRestart the server");
             }
 
             // Display if an update is available

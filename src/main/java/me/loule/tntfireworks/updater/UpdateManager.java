@@ -74,35 +74,29 @@ public class UpdateManager {
     /**
      * Downloads and installs the latest version of the plugin
      * @param sender The command sender
+     * @param confirmed Whether the user has confirmed the update
      */
-    public void updatePlugin(CommandSender sender) {
-        if (!updateAvailable) {
-            // Check if an update is available before downloading
-            sender.sendMessage("§6[TNTFireworks] §eChecking for updates before downloading...");
+    public void updatePlugin(CommandSender sender, boolean confirmed) {
+        // First, always check for updates
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+            boolean hasUpdate = updateChecker.checkForUpdates();
+            updateAvailable = hasUpdate;
 
-            plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
-                boolean hasUpdate = updateChecker.checkForUpdates();
-                updateAvailable = hasUpdate;
+            if (!hasUpdate) {
+                sender.sendMessage("§6[TNTFireworks] §aYou are already using the latest version of the plugin.");
+                return;
+            }
 
-                if (hasUpdate) {
-                    // Download the update
-                    updateDownloader.downloadUpdate(sender, updateChecker.getLatestVersionString());
-                } else {
-                    sender.sendMessage("§6[TNTFireworks] §aYou are already using the latest version of the plugin.");
-                }
-            });
-        } else {
-            // Download directly if an update is already known
-            updateDownloader.downloadUpdate(sender, updateChecker.getLatestVersionString());
-        }
-    }
-
-    /**
-     * Restarts the server
-     * @param sender The command sender
-     */
-    public void restartServer(CommandSender sender) {
-        updateDownloader.restartServer(sender);
+            if (confirmed) {
+                // Download and restart
+                updateDownloader.downloadAndRestart(sender, updateChecker.getLatestVersionString());
+            } else {
+                // Ask for confirmation
+                sender.sendMessage("§6[TNTFireworks] §eA new version is available: §b" + updateChecker.getLatestVersionString());
+                sender.sendMessage("§6[TNTFireworks] §eTo update, please run §b/tntfireworks update confirm");
+                sender.sendMessage("§6[TNTFireworks] §cThis will download the update and restart the server.");
+            }
+        });
     }
 
     /**
