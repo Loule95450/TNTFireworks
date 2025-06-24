@@ -5,7 +5,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 /**
- * Gestionnaire des mises à jour pour TNTFireworks
+ * Update manager for TNTFireworks
  */
 public class UpdateManager {
     private final Main plugin;
@@ -22,91 +22,91 @@ public class UpdateManager {
     }
 
     /**
-     * Initialise le gestionnaire de mise à jour
+     * Initializes the update manager
      */
     public void initialize() {
         if (plugin.getConfig().getBoolean("check-updates", true)) {
-            // Vérifier les mises à jour de manière asynchrone
+            // Check for updates asynchronously
             plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
                 updateAvailable = updateChecker.checkForUpdates();
             });
 
-            // Vérifier les mises à jour périodiquement (toutes les 6 heures)
+            // Periodically check for updates (every 6 hours)
             plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, () -> {
                 updateAvailable = updateChecker.checkForUpdates();
-            }, 20L * 60L * 60L * 6L, 20L * 60L * 60L * 6L); // Délai initial et période en ticks
+            }, 20L * 60L * 60L * 6L, 20L * 60L * 60L * 6L); // Initial delay and period in ticks
         }
     }
 
     /**
-     * Notifie les administrateurs d'une mise à jour disponible lors de leur connexion
-     * @param player Le joueur qui vient de se connecter
+     * Notifies administrators of an available update on join
+     * @param player The player who just joined
      */
     public void notifyOnJoin(Player player) {
         if (updateAvailable && player.hasPermission("tntfireworks.update")) {
             plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                player.sendMessage("§6[TNTFireworks] §eUne nouvelle version est disponible: §b" + updateChecker.getLatestVersionString());
-                player.sendMessage("§6[TNTFireworks] §eUtilisez §b/tntfireworks update §epour mettre à jour le plugin.");
-            }, 40L); // Délai court pour s'assurer que le joueur voit le message après la connexion
+                player.sendMessage("§6[TNTFireworks] §eA new version is available: §b" + updateChecker.getLatestVersionString());
+                player.sendMessage("§6[TNTFireworks] §eUse §b/tntfireworks update §eto update the plugin.");
+            }, 40L); // Short delay to ensure the player sees the message after login
         }
     }
 
     /**
-     * Vérifie les mises à jour et notifie l'expéditeur
-     * @param sender L'expéditeur de la commande
+     * Checks for updates and notifies the sender
+     * @param sender The command sender
      */
     public void checkForUpdates(CommandSender sender) {
-        sender.sendMessage("§6[TNTFireworks] §eVérification des mises à jour...");
+        sender.sendMessage("§6[TNTFireworks] §eChecking for updates...");
 
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
             boolean hasUpdate = updateChecker.checkForUpdates();
             updateAvailable = hasUpdate;
 
             if (hasUpdate) {
-                sender.sendMessage("§6[TNTFireworks] §eUne nouvelle version est disponible: §b" + updateChecker.getLatestVersionString());
-                sender.sendMessage("§6[TNTFireworks] §eUtilisez §b/tntfireworks update §epour mettre à jour le plugin.");
+                sender.sendMessage("§6[TNTFireworks] §eA new version is available: §b" + updateChecker.getLatestVersionString());
+                sender.sendMessage("§6[TNTFireworks] §eUse §b/tntfireworks update §eto update the plugin.");
             } else {
-                sender.sendMessage("§6[TNTFireworks] §aVous utilisez la dernière version du plugin.");
+                sender.sendMessage("§6[TNTFireworks] §aYou are using the latest version of the plugin.");
             }
         });
     }
 
     /**
-     * Télécharge et installe la dernière version du plugin
-     * @param sender L'expéditeur de la commande
+     * Downloads and installs the latest version of the plugin
+     * @param sender The command sender
      */
     public void updatePlugin(CommandSender sender) {
         if (!updateAvailable) {
-            // Vérifier si une mise à jour est disponible avant de télécharger
-            sender.sendMessage("§6[TNTFireworks] §eVérification des mises à jour avant le téléchargement...");
+            // Check if an update is available before downloading
+            sender.sendMessage("§6[TNTFireworks] §eChecking for updates before downloading...");
 
             plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
                 boolean hasUpdate = updateChecker.checkForUpdates();
                 updateAvailable = hasUpdate;
 
                 if (hasUpdate) {
-                    // Télécharger la mise à jour
+                    // Download the update
                     updateDownloader.downloadUpdate(sender, updateChecker.getLatestVersionString());
                 } else {
-                    sender.sendMessage("§6[TNTFireworks] §aVous utilisez déjà la dernière version du plugin.");
+                    sender.sendMessage("§6[TNTFireworks] §aYou are already using the latest version of the plugin.");
                 }
             });
         } else {
-            // Télécharger directement si une mise à jour est déjà connue
+            // Download directly if an update is already known
             updateDownloader.downloadUpdate(sender, updateChecker.getLatestVersionString());
         }
     }
 
     /**
-     * Redémarre le serveur
-     * @param sender L'expéditeur de la commande
+     * Restarts the server
+     * @param sender The command sender
      */
     public void restartServer(CommandSender sender) {
         updateDownloader.restartServer(sender);
     }
 
     /**
-     * @return true si une mise à jour est disponible
+     * @return true if an update is available
      */
     public boolean isUpdateAvailable() {
         return updateAvailable;

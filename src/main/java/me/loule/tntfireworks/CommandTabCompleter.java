@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 public class CommandTabCompleter implements TabCompleter {
 
-    private final List<String> subCommands = Arrays.asList("reload");
+    private final List<String> subCommands = Arrays.asList("reload", "update", "check", "restart");
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
@@ -20,7 +20,11 @@ public class CommandTabCompleter implements TabCompleter {
                 // Filter subcommands based on permissions and what the user has typed so far
                 return subCommands.stream()
                         .filter(subCmd -> subCmd.startsWith(args[0].toLowerCase()))
-                        .filter(subCmd -> !subCmd.equals("reload") || sender.hasPermission("tntfireworks.reload"))
+                        .filter(subCmd -> 
+                            (subCmd.equals("reload") && sender.hasPermission("tntfireworks.reload")) ||
+                            ((subCmd.equals("update") || subCmd.equals("check")) && sender.hasPermission("tntfireworks.update")) ||
+                            (subCmd.equals("restart") && sender.hasPermission("tntfireworks.restart"))
+                        )
                         .collect(Collectors.toList());
             }
         }

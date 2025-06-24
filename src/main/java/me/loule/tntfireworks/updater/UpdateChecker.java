@@ -21,13 +21,16 @@ public class UpdateChecker {
     public UpdateChecker(Main plugin, String githubRepo) {
         this.plugin = plugin;
         this.githubRepo = githubRepo;
-        this.versionPattern = Pattern.compile("tag/([\\d.]+)-SNAPSHOT");
+        this.versionPattern = Pattern.compile("tag/(.*?)-SNAPSHOT");
         this.currentVersion = plugin.getDescription().getVersion();
+
+        // Display current version in logs
+        plugin.getLogger().info("Current version: " + this.currentVersion);
     }
 
     /**
-     * Vérifie si une mise à jour est disponible
-     * @return true si une mise à jour est disponible
+     * Checks if an update is available
+     * @return true if an update is available
      */
     public boolean checkForUpdates() {
         try {
@@ -35,30 +38,30 @@ public class UpdateChecker {
             this.latestVersion = latestVersion;
 
             if (latestVersion == null) {
-                plugin.getLogger().warning("Impossible de vérifier les mises à jour: version non trouvée.");
+                plugin.getLogger().warning("Could not check for updates: version not found.");
                 return false;
             }
 
-            // Comparaison des versions
+            // Compare versions
             if (isNewer(latestVersion, currentVersion)) {
                 updateAvailable = true;
-                plugin.getLogger().info("Une nouvelle version de TNTFireworks est disponible: " + latestVersion);
-                plugin.getLogger().info("Utilisez /tntfireworks update pour mettre à jour le plugin.");
+                plugin.getLogger().info("A new version of TNTFireworks is available: " + latestVersion);
+                plugin.getLogger().info("Use /tntfireworks update to update the plugin.");
                 return true;
             } else {
-                plugin.getLogger().info("TNTFireworks est à jour (version " + currentVersion + ").");
+                plugin.getLogger().info("TNTFireworks is up to date (version " + currentVersion + ").");
                 return false;
             }
         } catch (IOException e) {
-            plugin.getLogger().warning("Impossible de vérifier les mises à jour: " + e.getMessage());
+            plugin.getLogger().warning("Could not check for updates: " + e.getMessage());
             return false;
         }
     }
 
     /**
-     * Récupère la dernière version disponible sur GitHub
-     * @return La dernière version disponible
-     * @throws IOException Si une erreur se produit lors de la connexion à GitHub
+     * Gets the latest version from GitHub
+     * @return The latest available version
+     * @throws IOException If an error occurs while connecting to GitHub
      */
     private String getLatestVersion() throws IOException {
         URL url = new URL("https://github.com/" + githubRepo + "/releases/latest");
@@ -71,12 +74,15 @@ public class UpdateChecker {
 
         if (responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_MOVED_TEMP) {
             String redirectUrl = connection.getHeaderField("Location");
+            plugin.getLogger().info("Redirect URL: " + redirectUrl);
             Matcher matcher = versionPattern.matcher(redirectUrl);
             if (matcher.find()) {
-                return matcher.group(1);
+                String version = matcher.group(1);
+                plugin.getLogger().info("Version found: " + version);
+                return version;
             }
         } else if (responseCode == HttpURLConnection.HTTP_OK) {
-            // Si pas de redirection, lire le contenu de la page
+            // If no redirection, read page content
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
                 String line;
                 StringBuilder response = new StringBuilder();
@@ -86,21 +92,29 @@ public class UpdateChecker {
 
                 Matcher matcher = versionPattern.matcher(response.toString());
                 if (matcher.find()) {
-                    return matcher.group(1);
+                    String version = matcher.group(1);
+                    plugin.getLogger().info("Version found on page: " + version);
+                    return version;
                 }
             }
         }
+
+        plugin.getLogger().warning("No version found. Response code: " + responseCode);
 
         return null;
     }
 
     /**
-     * Compare deux versions pour déterminer si la première est plus récente
-     * @param version1 Première version
-     * @param version2 Deuxième version
-     * @return true si version1 est plus récente que version2
+     * Compares two versions to determine if the first is newer
+     * @param version1 First version
+     * @param version2 Second version
+     * @return true if version1 is newer than version2
      */
     private boolean isNewer(String version1, String version2) {
+        // Remove suffixes like "-SNAPSHOT" before comparison
+        version1 = cleanVersionString(version1);
+        version2 = cleanVersionString(version2);
+
         String[] parts1 = version1.split("\\.");
         String[] parts2 = version2.split("\\.");
 
@@ -117,18 +131,34 @@ public class UpdateChecker {
             }
         }
 
-        return false; // Les versions sont identiques
+        return false; // Versions are identical
     }
 
     /**
-     * @return La dernière version disponible
+     * Cleans a version string by removing non-numeric suffixes
+     * @param version The version string to clean
+     * @return The cleaned version, containing only numbers and dots
+     */
+    private String cleanVersionString(String version) {
+        // Remove everything after a dash or space
+        if (version.contains("-")) {
+            version = version.substring(0, version.indexOf("-"));
+        }
+        if (version.contains(" ")) {
+            version = version.substring(0, version.indexOf(" "));
+        }
+        return version;
+    }
+
+    /**
+     * @return The latest available version
      */
     public String getLatestVersionString() {
         return latestVersion;
     }
 
     /**
-     * @return true si une mise à jour est disponible
+     * @return true if an update is available
      */
     public boolean isUpdateAvailable() {
         return updateAvailable;
