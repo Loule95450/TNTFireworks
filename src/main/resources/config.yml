@@ -1,0 +1,65 @@
+# TNTFireworks Configuration
+
+# -------------------------
+# Explosion settings
+# -------------------------
+
+# Should regular TNT explosions be converted to fireworks?
+tnt-explosions-enabled: true
+
+# Should TNT minecart explosions be converted to fireworks?
+tnt-minecart-explosions-enabled: true
+
+# Should explosions cause block damage? (false = no damage)
+block-damage-enabled: false
+
+# -------------------------
+# Chain reaction settings
+# -------------------------
+
+# Should nearby TNT blocks be activated?
+chain-reaction-enabled: true
+
+# Radius to check for nearby TNT blocks (measured in blocks)
+chain-reaction-radius: 3
+
+# Minimum fuse ticks for chain reaction TNT
+min-fuse-ticks: 10
+
+# Maximum fuse ticks for chain reaction TNT
+max-fuse-ticks: 19
+
+# -------------------------
+# Firework settings
+# -------------------------
+
+# Minimum number of fireworks to spawn per explosion
+min-fireworks: 2
+
+# Maximum number of fireworks to spawn per explosion
+max-fireworks: 4
+
+# Firework power (height of explosion, 0 = lowest, 4 = highest)
+firework-power: 0
+
+# Available firework colors:
+# RED, BLUE, GREEN, YELLOW, PURPLE, WHITE, ORANGE, LIME, AQUA, BLACK, GRAY, NAVY, TEAL, OLIVE, MAROON, SILVER, FUCHSIA
+firework-colors:
+  - RED
+  - BLUE
+  - GREEN
+  - YELLOW
+  - PURPLE
+  - WHITE
+  - ORANGE
+  - LIME
+  - AQUA
+
+# Should fireworks have a trail effect?
+firework-trail-enabled: true
+
+# Should fireworks have a flicker/twinkle effect?
+firework-flicker-enabled: true
+
+# Should firework effects be randomized?
+randomize-firework-effects: true

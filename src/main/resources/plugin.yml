@@ -1,4 +1,14 @@
 name: TNTFireworks
-version: '1.0-SNAPSHOT'
-main: me.loule.tntfireworks.TNTFireworks
+version: '${version}'
+main: me.loule.tntfireworks.Main
 api-version: '1.21'
+description: Transforms TNT explosions into beautiful low-flying fireworks without damaging blocks. Creates chain reactions with nearby TNT for spectacular visual effects.
+commands:
+  tntfireworks:
+    description: Main command for TNTFireworks plugin
+    usage: /tntfireworks [reload]
+    aliases: [tntfw]
+permissions:
+  tntfireworks.reload:
+    description: Allows reloading the plugin configuration
+    default: op

@@ -1,28 +1,40 @@
 package me.loule.tntfireworks;
 
-import org.bukkit.Color;
-import org.bukkit.FireworkEffect;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Firework;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Random;
 
-public class TNTFireworks extends JavaPlugin implements Listener {
+public class Main extends JavaPlugin implements Listener {
 
     private final Random random = new Random();
+    private ConfigManager configManager;
+    private FireworkManager fireworkManager;
 
     @Override
     public void onEnable() {
+        // Save default config
+        saveDefaultConfig();
+
+        // Initialize managers
+        configManager = new ConfigManager(this);
+        fireworkManager = new FireworkManager(configManager);
+
+        // Register event listener
         getServer().getPluginManager().registerEvents(this, this);
+
+        // Register tab completer
+        getCommand("tntfireworks").setTabCompleter(new CommandTabCompleter());
+
         getLogger().info("[TNTFireworks] Plugin enabled successfully!");
     }
 
@@ -31,26 +43,60 @@ public class TNTFireworks extends JavaPlugin implements Listener {
         getLogger().info("[TNTFireworks] Plugin disabled successfully!");
     }
 
+    @Override
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if (cmd.getName().equalsIgnoreCase("tntfireworks")) {
+            if (args.length > 0 && args[0].equalsIgnoreCase("reload")) {
+                if (sender.hasPermission("tntfireworks.reload")) {
+                    configManager.loadConfig();
+                    sender.sendMessage("§a[TNTFireworks] Configuration reloaded successfully!");
+                    return true;
+                } else {
+                    sender.sendMessage("§c[TNTFireworks] You don't have permission to use this command.");
+                    return true;
+                }
+            }
+
+            sender.sendMessage("§6[TNTFireworks] §fVersion: §e" + getDescription().getVersion());
+            if (sender.hasPermission("tntfireworks.reload")) {
+                sender.sendMessage("§6[TNTFireworks] §fUse /tntfireworks reload to reload the configuration.");
+            }
+            return true;
+        }
+        return false;
+    }
+
     @EventHandler
     public void onTNTExplode(EntityExplodeEvent event) {
-        if (event.getEntityType() == EntityType.TNT || event.getEntityType() == EntityType.TNT_MINECART) {
+        EntityType entityType = event.getEntityType();
+
+        // Handle block damage separately for all TNT and TNT Minecart explosions
+        // regardless of fireworks conversion settings
+        if ((entityType == EntityType.TNT || entityType == EntityType.TNT_MINECART) && 
+            !configManager.isBlockDamageEnabled()) {
+            event.blockList().clear();
+            event.setYield(0);
+        }
+
+        // Check if this explosion type should be processed for fireworks
+        boolean shouldProcess = false;
+
+        if (entityType == EntityType.TNT && configManager.isTntExplosionsEnabled()) {
+            shouldProcess = true;
+        } else if (entityType == EntityType.TNT_MINECART && configManager.isTntMinecartExplosionsEnabled()) {
+            shouldProcess = true;
+        }
+
+        if (shouldProcess) {
             Location location = event.getLocation();
 
-            // Vérifie les blocs de TNT dans un rayon de 3 blocs
-            checkAndPrimeTNT(location, 3);
-
-            // Supprime les dégâts sur les blocs pour éviter la destruction
-            event.blockList().clear();
-
-            // Empêche les dommages sur les entités
-            event.setYield(0);
-
-            // Nombre de feux d'artifice à générer (entre 2 et 4)
-            int fireworkCount = random.nextInt(3) + 2;
-
-            for (int i = 0; i < fireworkCount; i++) {
-                spawnRandomFirework(location);
+            // Check for chain reactions if enabled
+            if (configManager.isChainReactionEnabled()) {
+                checkAndPrimeTNT(location, configManager.getChainReactionRadius());
             }
+
+            // Spawn fireworks
+            fireworkManager.spawnFireworks(location);
         }
     }
 
@@ -62,41 +108,23 @@ public class TNTFireworks extends JavaPlugin implements Listener {
                     Block block = blockLoc.getBlock();
 
                     if (block.getType() == Material.TNT) {
-                        // Remplace le bloc TNT par un TNT amorcé
+                        // Replace TNT block with primed TNT
                         block.setType(Material.AIR);
-                        TNTPrimed primedTNT = (TNTPrimed) center.getWorld().spawnEntity(blockLoc.clone().add(0.5, 0.5, 0.5), EntityType.TNT);
-                        primedTNT.setFuseTicks(10 + random.nextInt(10)); // Délai aléatoire entre 10 et 19 ticks
+                        TNTPrimed primedTNT = (TNTPrimed) center.getWorld().spawnEntity(
+                                blockLoc.clone().add(0.5, 0.5, 0.5), 
+                                EntityType.TNT
+                        );
+
+                        // Set random fuse time within configured range
+                        int minTicks = configManager.getMinFuseTicks();
+                        int maxTicks = configManager.getMaxFuseTicks();
+                        int fuseTicks = (minTicks == maxTicks) ? minTicks : 
+                                minTicks + random.nextInt(maxTicks - minTicks + 1);
+
+                        primedTNT.setFuseTicks(fuseTicks);
                     }
                 }
             }
         }
-    }
-
-    private void spawnRandomFirework(org.bukkit.Location location) {
-        Firework firework = (Firework) location.getWorld().spawnEntity(location, EntityType.FIREWORK_ROCKET);
-        FireworkMeta meta = firework.getFireworkMeta();
-
-        // Sélectionne un type d'effet aléatoire
-        FireworkEffect.Type[] types = FireworkEffect.Type.values();
-        FireworkEffect.Type effectType = types[random.nextInt(types.length)];
-
-        // Sélectionne des couleurs aléatoires
-        Color[] colors = {Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW, Color.PURPLE,
-                Color.WHITE, Color.ORANGE, Color.LIME, Color.AQUA};
-        Color mainColor = colors[random.nextInt(colors.length)];
-        Color fadeColor = colors[random.nextInt(colors.length)];
-
-        // Configure l'effet du feu d'artifice
-        FireworkEffect effect = FireworkEffect.builder()
-                .withColor(mainColor)
-                .withFade(fadeColor)
-                .with(effectType)
-                .trail(random.nextBoolean()) // Ajoute ou non un sillage
-                .flicker(random.nextBoolean()) // Ajoute ou non un scintillement
-                .build();
-
-        meta.addEffect(effect);
-        meta.setPower(0); // Puissance 0 pour limiter la hauteur à 1 bloc
-        firework.setFireworkMeta(meta);
     }
 }
