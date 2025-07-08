@@ -47,6 +47,7 @@ public class UpdateManager {
             plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
                 player.sendMessage("§6[TNTFireworks] §eA new version is available: §b" + updateChecker.getLatestVersionString());
                 player.sendMessage("§6[TNTFireworks] §eUse §b/tntfireworks update §eto update the plugin.");
+                player.sendMessage("§6[TNTFireworks] §eYour configuration will be preserved when updating.");
             }, 40L); // Short delay to ensure the player sees the message after login
         }
     }
@@ -65,6 +66,7 @@ public class UpdateManager {
             if (hasUpdate) {
                 sender.sendMessage("§6[TNTFireworks] §eA new version is available: §b" + updateChecker.getLatestVersionString());
                 sender.sendMessage("§6[TNTFireworks] §eUse §b/tntfireworks update §eto update the plugin.");
+                sender.sendMessage("§6[TNTFireworks] §eYour current configuration will be preserved when updating.");
             } else {
                 sender.sendMessage("§6[TNTFireworks] §aYou are using the latest version of the plugin.");
             }
@@ -90,9 +92,11 @@ public class UpdateManager {
             if (confirmed) {
                 // Download and restart
                 updateDownloader.downloadAndRestart(sender, updateChecker.getLatestVersionString());
+                sender.sendMessage("§6[TNTFireworks] §aYour current configuration will be preserved when updating.");
             } else {
                 // Ask for confirmation
                 sender.sendMessage("§6[TNTFireworks] §eA new version is available: §b" + updateChecker.getLatestVersionString());
+                sender.sendMessage("§6[TNTFireworks] §eThis update will preserve your current configuration settings.");
                 sender.sendMessage("§6[TNTFireworks] §eTo update, please run §b/tntfireworks update confirm");
                 sender.sendMessage("§6[TNTFireworks] §cThis will download the update and restart the server.");
             }
