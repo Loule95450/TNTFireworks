@@ -11,6 +11,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -239,6 +241,21 @@ public class Main extends JavaPlugin implements Listener {
 
             // Spawn fireworks
             fireworkManager.spawnFireworks(location);
+        }
+    }
+
+    @EventHandler
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+        // Check if the damage is caused by an explosion
+        if (event.getCause() == DamageCause.BLOCK_EXPLOSION || event.getCause() == DamageCause.ENTITY_EXPLOSION) {
+            EntityType entityType = event.getEntityType();
+            
+            // Protect item frames and armor stands if enabled
+            if (configManager.isProtectDecorationEntities() && 
+                (entityType == EntityType.ITEM_FRAME || entityType == EntityType.GLOW_ITEM_FRAME || 
+                 entityType == EntityType.ARMOR_STAND)) {
+                event.setCancelled(true);
+            }
         }
     }
 

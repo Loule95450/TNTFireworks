@@ -17,6 +17,7 @@ public class ConfigManager {
     private boolean creeperExplosionsEnabled;
     private boolean blockDamageEnabled;
     private boolean creeperBlockDamageEnabled;
+    private boolean protectDecorationEntities;
     private boolean chainReactionEnabled;
     private int chainReactionRadius;
     private int minFuseTicks;
@@ -70,6 +71,7 @@ public class ConfigManager {
         creeperExplosionsEnabled = config.getBoolean("creeper-explosions-enabled", true);
         creeperBlockDamageEnabled = config.getBoolean("creeper-block-damage-enabled", false);
         blockDamageEnabled = config.getBoolean("block-damage-enabled", false);
+        protectDecorationEntities = config.getBoolean("protect-decoration-entities", true);
         chainReactionEnabled = config.getBoolean("chain-reaction-enabled", true);
         chainReactionRadius = config.getInt("chain-reaction-radius", 3);
         minFuseTicks = config.getInt("min-fuse-ticks", 10);
@@ -131,6 +133,10 @@ public class ConfigManager {
 
     public boolean isCreeperBlockDamageEnabled() {
         return creeperBlockDamageEnabled;
+    }
+
+    public boolean isProtectDecorationEntities() {
+        return protectDecorationEntities;
     }
 
     public boolean isBlockDamageEnabled() {
