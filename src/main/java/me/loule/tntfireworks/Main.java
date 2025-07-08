@@ -27,8 +27,14 @@ public class Main extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
-        // Save default config
+        // Save default config or update existing config with new options
         saveDefaultConfig();
+        
+        // Update the config to add new options without losing existing values
+        ConfigUpdater configUpdater = new ConfigUpdater(this);
+        if (configUpdater.updateConfig()) {
+            getLogger().info("[TNTFireworks] Configuration updated with new options.");
+        }
 
         // Check and clean up old update files
         cleanupUpdateFiles();
@@ -201,10 +207,13 @@ public class Main extends JavaPlugin implements Listener {
     public void onTNTExplode(EntityExplodeEvent event) {
         EntityType entityType = event.getEntityType();
 
-        // Handle block damage separately for all TNT and TNT Minecart explosions
-        // regardless of fireworks conversion settings
+        // Handle block damage separately based on entity type
         if ((entityType == EntityType.TNT || entityType == EntityType.TNT_MINECART) && 
             !configManager.isBlockDamageEnabled()) {
+            event.blockList().clear();
+            event.setYield(0);
+        } else if (entityType == EntityType.CREEPER && 
+                  !configManager.isCreeperBlockDamageEnabled()) {
             event.blockList().clear();
             event.setYield(0);
         }
@@ -215,6 +224,8 @@ public class Main extends JavaPlugin implements Listener {
         if (entityType == EntityType.TNT && configManager.isTntExplosionsEnabled()) {
             shouldProcess = true;
         } else if (entityType == EntityType.TNT_MINECART && configManager.isTntMinecartExplosionsEnabled()) {
+            shouldProcess = true;
+        } else if (entityType == EntityType.CREEPER && configManager.isCreeperExplosionsEnabled()) {
             shouldProcess = true;
         }
 

@@ -14,7 +14,9 @@ public class ConfigManager {
 
     private boolean tntExplosionsEnabled;
     private boolean tntMinecartExplosionsEnabled;
+    private boolean creeperExplosionsEnabled;
     private boolean blockDamageEnabled;
+    private boolean creeperBlockDamageEnabled;
     private boolean chainReactionEnabled;
     private int chainReactionRadius;
     private int minFuseTicks;
@@ -65,6 +67,8 @@ public class ConfigManager {
         // Load settings from config
         tntExplosionsEnabled = config.getBoolean("tnt-explosions-enabled", true);
         tntMinecartExplosionsEnabled = config.getBoolean("tnt-minecart-explosions-enabled", true);
+        creeperExplosionsEnabled = config.getBoolean("creeper-explosions-enabled", true);
+        creeperBlockDamageEnabled = config.getBoolean("creeper-block-damage-enabled", false);
         blockDamageEnabled = config.getBoolean("block-damage-enabled", false);
         chainReactionEnabled = config.getBoolean("chain-reaction-enabled", true);
         chainReactionRadius = config.getInt("chain-reaction-radius", 3);
@@ -119,6 +123,14 @@ public class ConfigManager {
 
     public boolean isTntMinecartExplosionsEnabled() {
         return tntMinecartExplosionsEnabled;
+    }
+
+    public boolean isCreeperExplosionsEnabled() {
+        return creeperExplosionsEnabled;
+    }
+
+    public boolean isCreeperBlockDamageEnabled() {
+        return creeperBlockDamageEnabled;
     }
 
     public boolean isBlockDamageEnabled() {
