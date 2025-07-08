@@ -6,14 +6,17 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -205,7 +208,7 @@ public class Main extends JavaPlugin implements Listener {
         return false;
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL)
     public void onTNTExplode(EntityExplodeEvent event) {
         EntityType entityType = event.getEntityType();
 
@@ -244,21 +247,51 @@ public class Main extends JavaPlugin implements Listener {
         }
     }
 
+    // Protect entities from explosion damage events
     @EventHandler
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         // Check if the damage is caused by an explosion
         if (event.getCause() == DamageCause.BLOCK_EXPLOSION || event.getCause() == DamageCause.ENTITY_EXPLOSION) {
             EntityType entityType = event.getEntityType();
             
-            // Protect item frames and armor stands if enabled
+            // Protect decorative entities if enabled
             if (configManager.isProtectDecorationEntities() && 
-                (entityType == EntityType.ITEM_FRAME || entityType == EntityType.GLOW_ITEM_FRAME || 
-                 entityType == EntityType.ARMOR_STAND)) {
+                 entityType == EntityType.ARMOR_STAND) {
+                
                 event.setCancelled(true);
             }
         }
     }
-
+    
+    // Specific protection for hanging entities (item frames, paintings)
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onHangingBreak(HangingBreakEvent event) {
+        if (event.getCause() == HangingBreakEvent.RemoveCause.EXPLOSION && configManager.isProtectDecorationEntities()) {
+            // Cancel the event to protect the hanging entity
+            event.setCancelled(true);
+            
+            // Additional protection with temporary invulnerability
+            Entity entity = event.getEntity();
+            entity.setInvulnerable(true);
+            
+            // Maintain invulnerability for a short time
+            for (int i = 1; i <= 4; i++) {
+                getServer().getScheduler().runTaskLater(this, () -> {
+                    if (entity.isValid()) {
+                        entity.setInvulnerable(true);
+                    }
+                }, i * 5L);
+            }
+            
+            // Remove invulnerability after a delay
+            getServer().getScheduler().runTaskLater(this, () -> {
+                if (entity.isValid()) {
+                    entity.setInvulnerable(false);
+                }
+            }, 25L);
+        }
+    }
+    
     private void checkAndPrimeTNT(Location center, int radius) {
         for (int x = -radius; x <= radius; x++) {
             for (int y = -radius; y <= radius; y++) {

@@ -17,6 +17,15 @@ tnt-explosions-enabled: true
 # Should TNT minecart explosions be converted to fireworks?
 tnt-minecart-explosions-enabled: true
 
+# Should creeper explosions be converted to fireworks?
+creeper-explosions-enabled: true
+
+# Should creeper explosions cause block damage?
+creeper-block-damage-enabled: false
+
+# Should explosions protect item frames, armor stands and paintings? (true = protected, false = destroyed)
+protect-decoration-entities: true
+
 # Should explosions cause block damage? (false = no damage)
 block-damage-enabled: false
 

@@ -23,7 +23,7 @@ creeper-explosions-enabled: true
 # Should creeper explosions cause block damage?
 creeper-block-damage-enabled: false
 
-# Should explosions protect item frames and armor stands? (true = protected, false = destroyed)
+# Should explosions protect item frames, armor stands and paintings? (true = protected, false = destroyed)
 protect-decoration-entities: true
 
 # Should explosions cause block damage? (false = no damage)
